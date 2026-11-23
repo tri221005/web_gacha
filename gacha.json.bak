@@ -4,7 +4,7 @@
   "cases": [
     {
       "id": "jelly-starter",
-      "name": "Rương Jelly Starter EDIT",
+      "name": "Rương Jelly Starter",
       "description": "Rương thử cho người mới. Đồ cơ bản dễ mở, tỷ lệ trúng vừa sức.",
       "pull_cost": 5000,
       "items": [
@@ -12,42 +12,42 @@
           "id": "dust",
           "name": "Bụi vàng",
           "rarity": "consumer",
-          "weight": 42.0,
+          "weight": 42,
           "coin": 500
         },
         {
           "id": "apple",
           "name": "Táo vàng",
           "rarity": "consumer",
-          "weight": 18.0,
+          "weight": 18,
           "coin": 900
         },
         {
           "id": "pouch",
           "name": "Túi Coin",
           "rarity": "industrial",
-          "weight": 16.0,
+          "weight": 16,
           "coin": 2500
         },
         {
           "id": "iron",
           "name": "Thỏi sắt",
           "rarity": "industrial",
-          "weight": 10.0,
+          "weight": 10,
           "coin": 3200
         },
         {
           "id": "scroll",
           "name": "White Scroll",
           "rarity": "milspec",
-          "weight": 8.0,
+          "weight": 8,
           "coin": 8000
         },
         {
           "id": "book",
           "name": "Sách phù phép",
           "rarity": "restricted",
-          "weight": 4.0,
+          "weight": 4,
           "coin": 15000
         },
         {
@@ -63,13 +63,6 @@
           "rarity": "covert",
           "weight": 0.5,
           "coin": 80000
-        },
-        {
-          "id": "zzz_test_item",
-          "name": "Món thử",
-          "rarity": "consumer",
-          "weight": 2.0,
-          "coin": 1234
         }
       ]
     },
@@ -412,6 +405,28 @@
           "rarity": "extraordinary",
           "weight": 1,
           "coin": 4000000
+        }
+      ]
+    },
+    {
+      "id": "battle-test-case",
+      "name": "Rương test",
+      "description": "",
+      "pull_cost": 1000,
+      "items": [
+        {
+          "id": "bt-low",
+          "name": "Thấp",
+          "rarity": "consumer",
+          "weight": 1,
+          "coin": 100
+        },
+        {
+          "id": "bt-high",
+          "name": "Cao",
+          "rarity": "covert",
+          "weight": 1,
+          "coin": 5000
         }
       ]
     }

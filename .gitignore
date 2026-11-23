@@ -27,6 +27,7 @@ Nexo/
 
 # Logs
 *.log
+*.err
 
 # Build artifacts
 *.zip

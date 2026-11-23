@@ -201,7 +201,7 @@ APP_DB_PASSWORD='MatKhauChoGachaApp' \
 PIKA_API_KEY='<your-pika-api-key>' \
 PIKA_SERVER_UUID='de021d06' \
 ADMIN_USERS='hhh21' \
-ADMIN_PASSWORD='Admin@admin' \
+ADMIN_PASSWORD='<mat-khau-admin-cua-ban>' \
 bash setup_vps.sh
 ```
 

@@ -77,7 +77,7 @@ END
 #
 # Script SQL duoc ghi ra file roi chay bang sqlcmd -i, vi lenh truyen
 # truc tiep qua shell se lam mat dau nhay neu mat khau chua ky tu dac biet
-# (nhu @ trong Admin@admin).
+# (nhu @ trong mat-khau-co-ky-tu-dac-biet).
 SQL_TMP=$(mktemp /tmp/gacha_user.XXXXXX.sql)
 cat > "$SQL_TMP" <<SQL
 USE master;
