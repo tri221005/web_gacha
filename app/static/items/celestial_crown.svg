@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#12141c"/>
+  <rect x="24" y="28" width="80" height="72" rx="10" fill="#2a2010" stroke="#e4ae39" stroke-width="3"/>
+  <polygon points="46,68 50,48 58,60 64,44 70,60 78,48 82,68" fill="#38bdf8"/>
+  <circle cx="64" cy="44" r="3" fill="#ffffff"/>
+  <text x="64" y="92" text-anchor="middle" fill="#fef08a" font-size="9" font-family="Segoe UI,sans-serif">Vương Miện Sao</text>
+</svg>

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#12141c"/>
+  <rect x="24" y="28" width="80" height="72" rx="10" fill="#082032" stroke="#e4ae39" stroke-width="3"/>
+  <circle cx="64" cy="56" r="16" fill="#38bdf8"/>
+  <circle cx="64" cy="56" r="8" fill="#ffffff"/>
+  <ellipse cx="64" cy="56" rx="22" ry="6" fill="none" stroke="#f472b6" stroke-width="2"/>
+  <text x="64" y="92" text-anchor="middle" fill="#bae6fd" font-size="9" font-family="Segoe UI,sans-serif">Cầu Vũ Trụ</text>
+</svg>

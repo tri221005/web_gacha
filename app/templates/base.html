@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{% block title %}JellyVale{% endblock %}</title>
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem("jv_theme");
+        if (saved === "dark") {
+          document.documentElement.classList.add("dark");
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+  {% if csrf %}<meta name="csrf" content="{{ csrf }}">{% endif %}
+  <script src="/static/realtime.js"></script>
+</head>
+<body>
+  <div id="live-drops" class="live-strip" aria-label="Drop trực tiếp"></div>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="/gacha">Jelly<span>Vale</span></a>
+      <nav>
+        {% set p = request.url.path %}
+        <a class="nav-link {% if p == '/gacha' or p.startswith('/case/') %}on{% endif %}" href="/gacha">Rương</a>
+        <a class="nav-link {% if p.startswith('/battles') %}on{% endif %}" href="/battles">Battle</a>
+        <a class="nav-link {% if p.startswith('/upgrade') %}on{% endif %}" href="/upgrade">Nâng cấp</a>
+        <a class="nav-link {% if p.startswith('/bonus') %}on{% endif %}" href="/bonus">Bonus</a>
+        {% if player %}
+        <a class="nav-link {% if p.startswith('/inventory') %}on{% endif %}" href="/inventory">Túi đồ{% if held %} {{ held }}{% endif %}</a>
+        {% endif %}
+        {% if is_admin %}<a class="nav-link {% if p.startswith('/admin') %}on{% endif %}" href="/admin">Admin</a>{% endif %}
+      </nav>
+      <div class="header-right">
+        <button id="theme-toggle" class="theme-btn" type="button" title="Đổi giao diện Sáng / Tối" aria-label="Đổi giao diện sáng tối">☀️</button>
+        {% if player %}
+        <a class="coin-chip" href="/vi" title="Ví Coin của {{ player }}">
+          <span>{{ money_fmt or money }} Coin</span>
+          <span class="plus" title="Ví">+</span>
+        </a>
+        <a class="avatar-link" href="/vi" title="{{ player }}">
+          <span class="avatar">{{ (player[:2] if player else '?')|upper }}</span>
+          <span class="hide-sm">{{ player }}</span>
+        </a>
+        <form method="post" action="/logout"><button class="signout" type="submit">Thoát</button></form>
+        {% else %}
+        <a class="cf-btn-primary header-login" href="/login">Đăng nhập</a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+  <main class="page {% block page_class %}{% endblock %}">
+    {% if console_broken and not dry_run %}
+    <div class="alert" style="max-width:1100px;margin:16px auto 0">
+      API key PikaMC thiếu quyền <code>control.console</code> — mở rương / bán đồ sẽ không trừ Coin trên server.
+      Bật quyền đó trên hub.pikamc.vn rồi tạo lại key.
+    </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span>JellyVale Case — phong cách tươi sáng, roll trên server, đồ Minecraft.</span>
+      <span class="live-dot"><i></i> Provably recorded</span>
+    </div>
+  </footer>
+  <script src="/static/live.js"></script>
+  <script>
+    (function() {
+      const toggleBtn = document.getElementById("theme-toggle");
+      if (!toggleBtn) return;
+      function updateIcon() {
+        const isDark = document.documentElement.classList.contains("dark");
+        toggleBtn.textContent = isDark ? "🌙" : "☀️";
+      }
+      updateIcon();
+      toggleBtn.addEventListener("click", function() {
+        const isDark = document.documentElement.classList.toggle("dark");
+        localStorage.setItem("jv_theme", isDark ? "dark" : "light");
+        updateIcon();
+      });
+    })();
+  </script>
+</body>
+</html>

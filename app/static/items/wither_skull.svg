@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#12141c"/>
+  <rect x="24" y="28" width="80" height="72" rx="10" fill="#18181b" stroke="#8847ff" stroke-width="3"/>
+  <circle cx="64" cy="56" r="16" fill="#27272a"/>
+  <circle cx="58" cy="52" r="3" fill="#ffffff"/>
+  <circle cx="70" cy="52" r="3" fill="#ffffff"/>
+  <text x="64" y="92" text-anchor="middle" fill="#e4e4e7" font-size="10" font-family="Segoe UI,sans-serif">Đầu Wither</text>
+</svg>

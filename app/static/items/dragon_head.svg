@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#12141c"/>
+  <rect x="24" y="28" width="80" height="72" rx="10" fill="#18181b" stroke="#d32ce6" stroke-width="3"/>
+  <polygon points="48,68 56,46 64,52 72,46 80,68" fill="#111827"/>
+  <circle cx="58" cy="56" r="3" fill="#a855f7"/>
+  <circle cx="70" cy="56" r="3" fill="#a855f7"/>
+  <text x="64" y="92" text-anchor="middle" fill="#fae8ff" font-size="9" font-family="Segoe UI,sans-serif">Đầu Rồng</text>
+</svg>

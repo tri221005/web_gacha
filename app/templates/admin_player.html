@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}{{ target }} · Quản trị{% endblock %}
+{% block content %}
+<section class="admin-shell">
+  <header class="admin-head">
+    <div class="admin-head-copy">
+      <p class="eyebrow"><i></i> Hồ sơ người chơi</p>
+      <h1>{{ target }}</h1>
+      <p class="lead">Ví <strong>{{ balance }}</strong> Coin · {{ held_count }} món đang giữ ({{ held_worth }}){% if banned %} · <span class="admin-flag">đã bị cấm</span>{% endif %}</p>
+    </div>
+    <div class="admin-head-side">
+      <a class="ghost" href="/admin?tab=players">Về danh sách</a>
+    </div>
+  </header>
+
+  <div class="admin-two">
+    <div class="admin-block">
+      <h2>Điều chỉnh Coin</h2>
+      <p class="hint">Cộng hoặc trừ Coin trực tiếp trên server Minecraft. Số dư trong sổ sẽ được đồng bộ lại ngay sau đó.</p>
+      <div class="admin-form">
+        <input type="number" id="coin-amount" min="1" step="1" placeholder="Số Coin" aria-label="Số Coin">
+        <div class="admin-form-row">
+          <button class="cf-btn-primary" type="button" data-coin="give">Cộng Coin</button>
+          <button class="ghost" type="button" data-coin="take">Trừ Coin</button>
+        </div>
+        <div class="admin-form-row">
+          <input type="number" id="coin-balance" min="0" step="1" placeholder="Đặt số dư" aria-label="Đặt số dư">
+          <button class="ghost" type="button" id="coin-set">Đặt ví</button>
+        </div>
+        <p class="hint">Đặt ví chỉ sửa sổ nội bộ. Số dư thật nằm ở server, lần đồng bộ sau sẽ ghi đè lại.</p>
+      </div>
+    </div>
+
+    <div class="admin-block">
+      <h2>Quản lý tài khoản</h2>
+      <p class="hint">Tài khoản bị cấm vẫn đăng nhập được, nhưng mọi hành động quay rương, bán đồ và vào battle đều bị chặn.</p>
+      <div class="admin-form">
+        <input type="text" id="ban-reason" placeholder="Lý do cấm (không bắt buộc)" aria-label="Lý do cấm">
+        <div class="admin-form-row">
+          {% if banned %}
+          <button class="ghost" type="button" id="ban-lift">Gỡ cấm</button>
+          {% else %}
+          <button class="cf-btn-primary" type="button" id="ban-set">Cấm tài khoản</button>
+          {% endif %}
+        </div>
+        {% if banned %}<p class="ok">Tài khoản này đang bị cấm.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-block">
+    <h2>Đồ đang giữ ({{ held_count }})</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Món</th><th>Độ hiếm</th><th>Giá trị</th><th>Nguồn</th><th>Rương</th></tr></thead>
+        <tbody>
+          {% for row in items %}
+          <tr>
+            <td>{{ row.name }}</td>
+            <td>{{ row.rarity }}</td>
+            <td>{{ row.value_fmt }}</td>
+            <td>{{ row.source }}</td>
+            <td>{{ row.case_id }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="5">Túi đồ trống.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="admin-block">
+    <h2>50 giao dịch gần nhất</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Thời gian</th><th>Loại</th><th>Số tiền</th><th>Ghi chú</th></tr></thead>
+        <tbody>
+          {% for row in txs %}
+          <tr>
+            <td>{{ row.when }}</td>
+            <td>{{ row.kind_label }}</td>
+            <td>{{ row.amount_fmt }}</td>
+            <td>{{ row.note }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4">Chưa có giao dịch.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="admin-toast" id="admin-toast" role="status" aria-live="polite"></div>
+<script src="/static/admin.js"></script>
+{% endblock %}

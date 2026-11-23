@@ -1,0 +1,31 @@
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+extend-exclude = [
+    ".venv",
+    "caseforge-main",
+    "Nexo",
+    "downloads",
+    "data",
+    "shots",
+]
+
+[tool.ruff.lint]
+# The rules that catch real mistakes: unused names, broken syntax, bugs
+# that only show up at runtime, and modernisation that keeps the code
+# readable.
+select = ["E", "W", "F", "I", "UP", "B", "C4", "RET", "SIM"]
+ignore = [
+    # A line that is a little long is not a bug. The formatter handles the
+    # ones that matter.
+    "E501",
+    # `try`/`except`/`pass` is the clearest way to say "this failure does
+    # not matter here".
+    "SIM105",
+    # A function with many arguments is fine when they are all data.
+    "PLR0913",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Test and tool scripts are allowed to be a bit loose.
+"tools/*" = ["B008", "SIM105", "RET504"]

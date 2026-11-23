@@ -1,0 +1,11 @@
+{
+  "exclude": [
+    "caseforge-main/",
+    "Nexo/",
+    "downloads/",
+    "shots/",
+    ".venv/",
+    ".ua/",
+    "tools/_shots/"
+  ]
+}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Ví · {{ player }}{% endblock %}
+{% block page_class %}narrow{% endblock %}
+{% block content %}
+<section class="wallet-card">
+  <p class="eyebrow"><i></i> Ví Coin</p>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <span class="avatar" style="width:40px;height:40px;font-size:14px">{{ player[:2]|upper }}</span>
+    <h1 style="margin:0">{{ player }}</h1>
+    <span class="grow"></span>
+    <button id="sync-btn" class="cf-btn-ghost sync-btn" type="button">Làm mới</button>
+  </div>
+  <p class="meta">Online gần nhất: <span id="last-seen">{{ last_seen }}</span></p>
+  <p class="amount" id="balance">{{ money_fmt }}</p>
+  <p class="hint">Coin web dùng mở rương, battle, bán đồ. {% if dry_run %}Dry-run: chưa trừ Coin in-game.{% endif %}</p>
+  <p class="meta">Coin in-game (Pika): <span id="pika">{{ pika_fmt }}</span></p>
+  <h2>Giao dịch</h2>
+  <div class="table-scroll">
+    <table>
+      <tbody>
+      {% for row in txs %}
+        <tr>
+          <td class="meta">{{ row.when }}</td>
+          <td>{{ row.kind_label }}</td>
+          <td style="color:hsl(var(--accent));font-weight:600">{{ row.amount_fmt }}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="3">Chưa có giao dịch.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+<script>
+  (function() {
+    const btn = document.getElementById("sync-btn");
+    if (!btn) return;
+    btn.addEventListener("click", async function() {
+      btn.disabled = true;
+      btn.textContent = "Đang đồng bộ…";
+      try {
+        const res = await fetch("/api/wallet/live?refresh=1", { headers: { "accept": "application/json" } });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Lỗi");
+        document.getElementById("balance").textContent = data.balance_fmt;
+        document.getElementById("pika").textContent = data.pika_fmt;
+        document.getElementById("last-seen").textContent = data.last_seen;
+        const chip = document.querySelector(".coin-chip span");
+        if (chip) chip.textContent = data.balance_fmt + " Coin";
+        btn.textContent = "Đã đồng bộ";
+      } catch (err) {
+        btn.textContent = "Lỗi: " + err.message;
+      }
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = "Làm mới";
+      }, 1800);
+    });
+  })();
+
+  /* The balance on the server can change without the player doing
+   * anything, so the page keeps itself up to date.
+   */
+  (function() {
+    if (!window.JVRealtime) return;
+    const balance = document.getElementById("balance");
+    const pika = document.getElementById("pika");
+    const seen = document.getElementById("last-seen");
+    window.JVRealtime.poll("/api/wallet/live", function(data) {
+      if (balance && typeof data.balance_fmt === "string") {
+        balance.textContent = data.balance_fmt;
+      }
+      if (pika && typeof data.pika_fmt === "string") pika.textContent = data.pika_fmt;
+      if (seen && typeof data.last_seen === "string") seen.textContent = data.last_seen;
+    }, { delay: 8000 });
+  })();
+</script>
+{% endblock %}

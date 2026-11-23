@@ -1,0 +1,37 @@
+<article class="cf-panel battle-card">
+  <div class="battle-card-top">
+    <span class="mode-pill {% if b.mode == 'CRAZY' %}crazy{% endif %}">{{ b.mode_label }}</span>
+    <span>Vòng: {{ b.rounds }}</span>
+    <span style="margin-left:auto">{{ b.status }} · {{ b.seated }}/{{ b.slots }}</span>
+  </div>
+  <div class="battle-cases">
+    <img src="{{ b.case_image }}" alt="">
+    <strong>{{ b.case_name }}</strong>
+  </div>
+  <div class="seat-pills">
+    {% for i in range(b.slots) %}
+      {% set p = (b.players or [])[i] if (b.players or [])|length > i else None %}
+      {% if p %}
+      <span class="seat-pill {% if b.winner == p.player %}win{% endif %}">
+        <span class="avatar" style="width:22px;height:22px;font-size:9px">{{ p.player[:2]|upper }}</span>
+        {{ 'Bạn' if player == p.player else p.player }}
+        {% if p.is_bot %}<em class="bot-tag">bot</em>{% endif %}
+      </span>
+      {% else %}
+      <span class="seat-free">Trống</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+  <div class="battle-foot">
+    <div>
+      <span class="meta">{% if b.status == 'FINISHED' %}Pot{% else %}Ghế{% endif %}</span>
+      <strong class="price"> {{ b.price_fmt }} Coin</strong>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      {% if b.winner %}<span class="meta">Thắng: {{ b.winner }}</span>{% endif %}
+      <a class="{% if b.status == 'WAITING' %}cf-btn-primary{% else %}cf-btn-ghost{% endif %} battle-enter" href="/battles/{{ b.id }}">
+        {% if b.status == 'WAITING' %}Vào{% else %}Xem{% endif %}
+      </a>
+    </div>
+  </div>
+</article>

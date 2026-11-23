@@ -1,0 +1,276 @@
+{% extends "base.html" %}
+{% block title %}Battle #{{ battle.id }} · JellyVale{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <div>
+    <p class="eyebrow"><i></i> Battle #{{ battle.id }}</p>
+    <h1>{{ battle.case_name }}</h1>
+    <p class="meta">{{ battle.mode_label }} · {{ battle.rounds }} vòng · {{ battle.price_fmt }} Coin / ghế</p>
+  </div>
+  <div class="grow"></div>
+  <div id="actions" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+</div>
+<p id="round-label" class="meta" style="min-height:1.4em"></p>
+<p id="hint" class="meta"></p>
+<div id="arena" class="arena"></div>
+<p id="winner-line" class="amount" style="text-align:center;font-size:28px;display:none"></p>
+<script type="module">
+  import { spinReel } from "/static/roulette.js";
+
+  const csrf = document.querySelector("meta[name=csrf]")?.content;
+  const battleId = {{ battle.id }};
+  const me = {{ (player or '') | tojson }};
+  let state = {{ battle_json | safe }};
+  let activeRound = 0;
+  let playedRound = 0;
+  let finishedReels = 0;
+  let watching = false;
+  let busy = false;
+
+  function initials(name) {
+    return (name || "?").slice(0, 2).toUpperCase();
+  }
+
+  function dropFor(player, round) {
+    return (state.drops || []).find((d) => d.player === player && d.round === round);
+  }
+
+  function revealedFor(player) {
+    return (state.drops || []).filter((d) => d.player === player && d.round <= playedRound);
+  }
+
+  function renderLobbyOrResult() {
+    const arena = document.getElementById("arena");
+    const players = state.players || [];
+    const slots = Number(state.slots || players.length || 2);
+    arena.style.gridTemplateColumns = `repeat(${slots}, minmax(0, 1fr))`;
+
+    let html = "";
+    for (let i = 0; i < slots; i += 1) {
+      const p = players[i];
+      if (!p) {
+        html += `<article class="seat"><p class="meta" style="text-align:center;padding:48px 0">Ghế trống</p></article>`;
+        continue;
+      }
+      const win = state.winner === p.player && activeRound === 0 && state.status === "FINISHED" ? " win-seat" : "";
+      const drops = revealedFor(p.player);
+      const total = drops.reduce((n, d) => n + Number(d.value || 0), 0);
+      html += `<article class="seat${win}" data-player="${p.player}">
+        <header style="display:flex;align-items:center;gap:8px">
+          <span class="avatar">${initials(p.player)}</span>
+          <strong>${p.player === me ? "Bạn" : p.player}</strong>
+          ${p.is_bot ? " <span class='bot-tag'>bot</span>" : ""}
+          <span class="price" style="margin-left:auto">${total.toLocaleString("vi-VN")} Coin</span>
+        </header>
+        <div class="seat-body" data-seat="${i}">
+          ${activeRound > 0 ? reelMarkup(i) : dropsHtml(drops)}
+        </div>
+      </article>`;
+    }
+    arena.innerHTML = html;
+  }
+
+  function reelMarkup(i) {
+    return `<div class="reel vertical" id="reel-${i}">
+      <div class="reel-marker-h"></div>
+      <div class="reel-fade-t"></div>
+      <div class="reel-fade-b"></div>
+      <div class="reel-strip vertical" id="strip-${i}"></div>
+    </div>`;
+  }
+
+  function dropsHtml(drops) {
+    if (!drops.length) {
+      return `<p class="meta" style="text-align:center;padding:40px 0">${state.status === "WAITING" ? "Đang chờ..." : "—"}</p>`;
+    }
+    return `<div class="seat-drops">${drops.map((d) =>
+      `<div class="mini-drop" style="border-bottom-color:${d.color}"><img src="${d.image}" alt=""><span>${d.value_fmt || d.value}</span></div>`
+    ).join("")}</div>`;
+  }
+
+  function paintActions() {
+    const box = document.getElementById("actions");
+    const seated = (state.players || []).some((p) => p.player === me);
+    const isHost = state.host === me;
+    const waiting = state.status === "WAITING";
+    const canJoin = waiting && me && !seated && (state.players || []).length < state.slots;
+    let html = "";
+    // The price includes the bot seat when a bot hosts the room: that
+    // seat was never paid for on the Minecraft server.
+    const seatPrice = state.join_price_fmt || state.price_fmt;
+    if (canJoin) html += `<button id="join" class="cf-btn-primary" type="button">Ngồi vào · ${seatPrice} Coin</button>`;
+    if (waiting && me) html += `<button id="bots" class="cf-btn-ghost" type="button">Gọi bot</button>`;
+    if (waiting && isHost) {
+      const ready = (state.players || []).length >= 2;
+      html += `<button id="start" class="cf-btn-primary" type="button" ${ready ? "" : "disabled"}>Bắt đầu quay</button>`;
+    }
+    if (!me && waiting) html += `<a class="cf-btn-primary" href="/login">Đăng nhập</a>`;
+    box.innerHTML = html;
+
+    document.getElementById("join")?.addEventListener("click", onJoin);
+    document.getElementById("bots")?.addEventListener("click", onBots);
+    document.getElementById("start")?.addEventListener("click", onStart);
+  }
+
+  function paintHint() {
+    const hint = document.getElementById("hint");
+    const win = document.getElementById("winner-line");
+    const roundLabel = document.getElementById("round-label");
+    if (activeRound > 0) {
+      roundLabel.textContent = `Vòng ${activeRound} / ${state.rounds} · ${state.case_name}`;
+      hint.textContent = "Đang quay...";
+      win.style.display = "none";
+      return;
+    }
+    roundLabel.textContent = "";
+    if (state.status === "WAITING") {
+      let text = `${(state.players || []).length}/${state.slots} ghế. Chủ phòng bấm Bắt đầu khi sẵn sàng.`;
+      // Say it out loud: the seat of a bot-hosted room was never paid
+      // for on the server, so the player pays for it too.
+      if (state.bot_due && !seated) {
+        text += ` Ghế bot của phòng này chưa được trả trên server, nên ngồi vào tốn ${state.bot_due.toLocaleString("vi-VN")} Coin thêm.`;
+      }
+      hint.textContent = text;
+      win.style.display = "none";
+    } else if (state.status === "FINISHED") {
+      hint.textContent = "Toàn bộ đồ vào túi người thắng.";
+      win.style.display = "block";
+      win.textContent = "Thắng: " + state.winner;
+    }
+  }
+
+  async function playRounds() {
+    watching = true;
+    activeRound = 1;
+    playedRound = 0;
+    finishedReels = 0;
+    paintActions();
+    paintHint();
+    renderLobbyOrResult();
+    startCurrentRound();
+  }
+
+  function startCurrentRound() {
+    const players = state.players || [];
+    finishedReels = 0;
+    paintHint();
+    renderLobbyOrResult();
+    players.forEach((p, index) => {
+      const drop = dropFor(p.player, activeRound);
+      if (!drop) {
+        finishedReels += 1;
+        maybeAdvance();
+        return;
+      }
+      const winner = {
+        id: drop.id,
+        name: drop.name,
+        rarity: drop.rarity,
+        coin: drop.value,
+        image: drop.image,
+        color: drop.color,
+      };
+      spinReel({
+        pool: state.pool || [winner],
+        winner,
+        orientation: "vertical",
+        index,
+        viewport: document.getElementById("reel-" + index),
+        strip: document.getElementById("strip-" + index),
+        onFinish: () => {
+          finishedReels += 1;
+          maybeAdvance();
+        },
+      });
+    });
+  }
+
+  function maybeAdvance() {
+    if (finishedReels < (state.players || []).length) return;
+    playedRound = activeRound;
+    setTimeout(() => {
+      if (activeRound < Number(state.rounds)) {
+        activeRound += 1;
+        startCurrentRound();
+      } else {
+        activeRound = 0;
+        watching = false;
+        paintActions();
+        paintHint();
+        renderLobbyOrResult();
+      }
+    }, 700);
+  }
+
+  async function refresh() {
+    const res = await fetch("/api/battles/" + battleId);
+    if (!res.ok) return;
+    const next = await res.json();
+    const wasWaiting = state.status === "WAITING";
+    state = next;
+    if (!watching) {
+      paintActions();
+      paintHint();
+      if (state.status === "FINISHED" && wasWaiting && (state.drops || []).length) {
+        playRounds();
+      } else if (state.status === "FINISHED" && !wasWaiting) {
+        playedRound = Number(state.rounds);
+        activeRound = 0;
+        renderLobbyOrResult();
+      } else {
+        renderLobbyOrResult();
+      }
+    }
+    // Keep polling whatever the state is. The room can start, run and
+    // finish without the player touching anything, and the result has
+    // to show up on its own.
+    setTimeout(refresh, 1200);
+  }
+
+  async function onJoin(ev) {
+    if (busy) return;
+    busy = true;
+    ev.target.disabled = true;
+    const res = await fetch("/api/battles/" + battleId + "/join", { method: "POST", headers: { "X-CSRF": csrf } });
+    const data = await res.json();
+    busy = false;
+    if (!res.ok) { document.getElementById("hint").textContent = data.detail; ev.target.disabled = false; return; }
+    state = data;
+    paintActions(); paintHint(); renderLobbyOrResult();
+  }
+
+  async function onBots(ev) {
+    if (busy) return;
+    busy = true;
+    ev.target.disabled = true;
+    const res = await fetch("/api/battles/" + battleId + "/bots", { method: "POST", headers: { "X-CSRF": csrf } });
+    const data = await res.json();
+    busy = false;
+    if (!res.ok) { document.getElementById("hint").textContent = data.detail; ev.target.disabled = false; return; }
+    state = data;
+    paintActions(); paintHint(); renderLobbyOrResult();
+  }
+
+  async function onStart(ev) {
+    if (busy) return;
+    busy = true;
+    ev.target.disabled = true;
+    const res = await fetch("/api/battles/" + battleId + "/start", { method: "POST", headers: { "X-CSRF": csrf } });
+    const data = await res.json();
+    busy = false;
+    if (!res.ok) { document.getElementById("hint").textContent = data.detail; ev.target.disabled = false; return; }
+    state = data;
+    playRounds();
+  }
+
+  // Opening an already-finished battle: show result, don't replay unless just settled.
+  if (state.status === "FINISHED") {
+    playedRound = Number(state.rounds);
+    activeRound = 0;
+  }
+  paintActions();
+  paintHint();
+  renderLobbyOrResult();
+  if (state.status === "WAITING") refresh();
+</script>
+{% endblock %}

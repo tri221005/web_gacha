@@ -1,0 +1,314 @@
+{% extends "base.html" %}
+{% block title %}{{ case.name }} · JellyVale{% endblock %}
+{% block content %}
+{% if dry_run %}
+<div class="banner">Chế độ thiết kế — trừ Coin ví web, đồ vào túi, chưa trừ in-game.</div>
+{% endif %}
+
+<div class="case-head">
+  <img src="{{ case.image }}" alt="{{ case.name }}">
+  <div>
+    <h1>{{ case.name }}</h1>
+    <p class="lead">{{ case.description }}</p>
+    <p class="price" style="color:hsl(var(--accent-text, var(--accent)));font-weight:700;margin:0">{{ case.cost_fmt }} Coin / lượt</p>
+  </div>
+</div>
+
+<section class="opener">
+  <!-- SINGLE REEL (HORIZONTAL) -->
+  <div id="single-reel-wrap" class="reel-wrap">
+    <div id="reel" class="reel">
+      <div class="reel-marker"></div>
+      <div class="reel-arrow-top"></div>
+      <div class="reel-arrow-bot"></div>
+      <div class="reel-fade-l"></div>
+      <div class="reel-fade-r"></div>
+      <div id="reel-strip" class="reel-strip"></div>
+    </div>
+  </div>
+
+  <!-- MULTI REELS (VERTICAL) -->
+  <div id="multi-reels-wrap" class="multi-reels-row" style="display:none"></div>
+
+  <!-- PRESETS: 1x, 2x, 3x, 4x, 5x -->
+  <div class="preset-bar">
+    <button type="button" class="preset-btn active" data-count="1">×1</button>
+    <button type="button" class="preset-btn" data-count="2">×2</button>
+    <button type="button" class="preset-btn" data-count="3">×3</button>
+    <button type="button" class="preset-btn" data-count="4">×4</button>
+    <button type="button" class="preset-btn" data-count="5">×5</button>
+  </div>
+
+  <p id="hint" class="meta" style="text-align:center;margin:14px 0 0">Chọn số lượng rương và bấm Mở — dải dừng đúng món server roll, đồ vào túi.</p>
+
+  <!-- DROP RESULTS -->
+  <div id="result" class="result-banner" hidden></div>
+
+  <div class="actions">
+    {% if player %}
+    <button id="open-btn" class="cf-btn-primary" type="button">Mở rương · {{ case.cost_fmt }} Coin</button>
+    {% else %}
+    <a class="cf-btn-primary" href="/login">Đăng nhập để mở</a>
+    {% endif %}
+  </div>
+</section>
+
+<h2>Bên trong rương</h2>
+<div class="contents">
+  {% for item in case.loot %}
+  <article class="item-card" style="box-shadow: inset 0 -2px 0 0 {{ item.color }}">
+    <div style="background:radial-gradient(ellipse 70% 60% at 50% 100%, {{ item.color }}22, transparent);padding:8px 0">
+      <img src="{{ item.image }}" alt="{{ item.name }}" loading="lazy">
+    </div>
+    <div class="name">{{ item.name }}</div>
+    <div class="chance">{{ item.weight }}% · {{ item.coin_fmt }} Coin</div>
+  </article>
+  {% endfor %}
+</div>
+
+{% if player %}
+<script type="module">
+  import { spinReel } from "/static/roulette.js";
+
+  const btn = document.getElementById("open-btn");
+  const result = document.getElementById("result");
+  const hint = document.getElementById("hint");
+  const singleWrap = document.getElementById("single-reel-wrap");
+  const multiWrap = document.getElementById("multi-reels-wrap");
+  const presetBtns = document.querySelectorAll(".preset-btn");
+  const csrf = document.querySelector("meta[name=csrf]").content;
+  const slug = {{ case.id | tojson }};
+  const baseCost = {{ case.pull_cost }};
+
+  let selectedCount = 1;
+  let isSpinning = false;
+
+  function renderMultiSlots(count) {
+    multiWrap.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const col = document.createElement("div");
+      col.className = "multi-reel-col";
+      col.innerHTML = `
+        <div id="multi-reel-${i}" class="reel vertical">
+          <div class="reel-marker-h"></div>
+          <div class="reel-fade-t"></div>
+          <div class="reel-fade-b"></div>
+          <div id="multi-strip-${i}" class="reel-strip vertical"></div>
+        </div>
+      `;
+      multiWrap.appendChild(col);
+    }
+  }
+
+  function updateCount(count) {
+    if (isSpinning) return;
+    selectedCount = count;
+    presetBtns.forEach(b => {
+      b.classList.toggle("active", Number(b.dataset.count) === count);
+    });
+    const total = baseCost * count;
+    btn.textContent = count > 1 
+      ? `Mở ×${count} rương · ${total.toLocaleString("vi-VN")} Coin`
+      : `Mở rương · ${total.toLocaleString("vi-VN")} Coin`;
+
+    if (count === 1) {
+      singleWrap.style.display = "block";
+      multiWrap.style.display = "none";
+    } else {
+      singleWrap.style.display = "none";
+      multiWrap.style.display = "flex";
+      renderMultiSlots(count);
+    }
+  }
+
+  presetBtns.forEach(b => {
+    b.addEventListener("click", () => {
+      updateCount(Number(b.dataset.count));
+    });
+  });
+
+  btn.addEventListener("click", async () => {
+    if (isSpinning) return;
+    isSpinning = true;
+    btn.disabled = true;
+    presetBtns.forEach(b => b.disabled = true);
+    result.hidden = true;
+    hint.textContent = selectedCount > 1 ? `Đang mở ${selectedCount} rương...` : "Đang quay...";
+
+    try {
+      const res = await fetch("/api/case/" + slug + "/open", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRF": csrf },
+        body: JSON.stringify({ count: selectedCount })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        hint.textContent = data.detail || "Không mở được rương.";
+        btn.disabled = false;
+        presetBtns.forEach(b => b.disabled = false);
+        isSpinning = false;
+        return;
+      }
+
+      // Update player coin balance chip immediately
+      const chip = document.querySelector(".coin-chip span");
+      if (chip && data.balance_fmt) {
+        chip.textContent = data.balance_fmt + " Coin";
+      }
+
+      const openings = data.openings || [{
+        winner: data.winner,
+        inventory_id: data.inventory_id,
+        winner_coin: data.winner.coin,
+        winner_coin_fmt: data.winner_coin_fmt,
+      }];
+
+      let finishedCount = 0;
+      const totalReels = openings.length;
+
+      if (totalReels === 1) {
+        singleWrap.style.display = "block";
+        multiWrap.style.display = "none";
+        spinReel({
+          pool: data.pool,
+          winner: openings[0].winner,
+          viewport: document.getElementById("reel"),
+          strip: document.getElementById("reel-strip"),
+          orientation: "horizontal",
+          onFinish: () => onReelsFinished(openings, data)
+        });
+      } else {
+        singleWrap.style.display = "none";
+        multiWrap.style.display = "flex";
+        renderMultiSlots(totalReels);
+
+        openings.forEach((op, idx) => {
+          spinReel({
+            pool: data.pool,
+            winner: op.winner,
+            viewport: document.getElementById(`multi-reel-${idx}`),
+            strip: document.getElementById(`multi-strip-${idx}`),
+            orientation: "vertical",
+            index: idx,
+            onFinish: () => {
+              finishedCount++;
+              if (finishedCount >= totalReels) {
+                onReelsFinished(openings, data);
+              }
+            }
+          });
+        });
+      }
+
+    } catch (err) {
+      hint.textContent = "Lỗi kết nối máy chủ.";
+      btn.disabled = false;
+      presetBtns.forEach(b => b.disabled = false);
+      isSpinning = false;
+    }
+  });
+
+  function onReelsFinished(openings, data) {
+    isSpinning = false;
+    btn.disabled = false;
+    presetBtns.forEach(b => b.disabled = false);
+
+    const spent = data.total_cost || (baseCost * openings.length);
+    const totalWon = openings.reduce((acc, o) => acc + (o.winner.coin || 0), 0);
+    const profit = totalWon - spent;
+    const profitClass = profit >= 0 ? "text-positive" : "text-negative";
+    const profitSign = profit >= 0 ? "+" : "";
+
+    let html = `
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:18px;margin-bottom:14px;font-size:14px">
+        <span>Chi: <strong>${spent.toLocaleString("vi-VN")} Coin</strong></span>
+        <span>Nhận: <strong style="color:hsl(var(--accent-text, var(--accent)))">${totalWon.toLocaleString("vi-VN")} Coin</strong></span>
+        <span>Chênh lệch: <strong style="color:${profit >= 0 ? 'hsl(var(--positive))' : 'hsl(var(--negative))'}">${profitSign}${profit.toLocaleString("vi-VN")} Coin</strong></span>
+      </div>
+      <div class="drop-results-grid">
+    `;
+
+    openings.forEach((op, i) => {
+      const color = op.winner.color || "#b0c3d9";
+      html += `
+        <div class="drop-result-card" id="drop-card-${op.inventory_id}" style="border-top-color:${color}">
+          <img src="${op.winner.image || '/static/items/_placeholder.svg'}" alt="${op.winner.name}">
+          <div class="name" title="${op.winner.name}">${op.winner.name}</div>
+          <div class="price">${(op.winner.coin || 0).toLocaleString("vi-VN")} Coin</div>
+          <button class="sell-single-btn" data-id="${op.inventory_id}" type="button">Bán</button>
+        </div>
+      `;
+    });
+
+    html += `
+      </div>
+      <div class="actions" style="margin-top:14px">
+        <button id="sell-all-won" class="cf-btn-primary" type="button">Bán tất cả (${openings.length} món) · ${totalWon.toLocaleString("vi-VN")} Coin</button>
+        <a class="cf-btn-ghost" href="/inventory">Xem túi đồ</a>
+      </div>
+    `;
+
+    result.hidden = false;
+    result.innerHTML = html;
+    hint.textContent = "Các món đã vào túi đồ. Bạn có thể bán ngay lấy Coin hoặc giữ lại.";
+
+    // Single sell handler
+    result.querySelectorAll(".sell-single-btn").forEach(sBtn => {
+      sBtn.addEventListener("click", async (e) => {
+        const id = Number(e.target.dataset.id);
+        e.target.disabled = true;
+        try {
+          const res = await fetch("/api/inventory/sell", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "X-CSRF": csrf },
+            body: JSON.stringify({ ids: [id] })
+          });
+          const sold = await res.json();
+          if (res.ok) {
+            const card = document.getElementById(`drop-card-${id}`);
+            if (card) card.classList.add("sold");
+            e.target.textContent = "Đã bán";
+            const chip = document.querySelector(".coin-chip span");
+            if (chip && sold.balance_fmt) chip.textContent = sold.balance_fmt + " Coin";
+          } else {
+            e.target.disabled = false;
+            hint.textContent = sold.detail || "Không bán được món.";
+          }
+        } catch (err) {
+          e.target.disabled = false;
+        }
+      });
+    });
+
+    // Sell all won items handler
+    document.getElementById("sell-all-won")?.addEventListener("click", async (e) => {
+      e.target.disabled = true;
+      const ids = openings.map(o => o.inventory_id);
+      try {
+        const res = await fetch("/api/inventory/sell", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-CSRF": csrf },
+          body: JSON.stringify({ ids })
+        });
+        const sold = await res.json();
+        if (res.ok) {
+          result.querySelectorAll(".drop-result-card").forEach(c => c.classList.add("sold"));
+          result.querySelectorAll(".sell-single-btn").forEach(b => {
+            b.disabled = true;
+            b.textContent = "Đã bán";
+          });
+          e.target.textContent = `Đã bán hết +${sold.amount_fmt} Coin`;
+          const chip = document.querySelector(".coin-chip span");
+          if (chip && sold.balance_fmt) chip.textContent = sold.balance_fmt + " Coin";
+        } else {
+          e.target.disabled = false;
+          hint.textContent = sold.detail || "Không bán được.";
+        }
+      } catch (err) {
+        e.target.disabled = false;
+      }
+    });
+  }
+</script>
+{% endif %}
+{% endblock %}

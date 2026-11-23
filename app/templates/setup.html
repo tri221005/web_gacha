@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Kết nối PikaMC{% endblock %}
+{% block content %}
+<section class="card wallet-card">
+  <p class="eyebrow">JellyVale · PikaMC</p>
+  <h1>Kết nối hosting live</h1>
+  <p class="lead">Web không dùng file trên máy bạn. Nó gọi API panel PikaMC để đọc AuthMe và Coin trên server đang chạy.</p>
+
+  <ol class="steps">
+    <li>Vào <a href="https://hub.pikamc.vn" target="_blank" rel="noreferrer">hub.pikamc.vn</a> và đăng nhập tài khoản hosting.</li>
+    <li>Mở <strong>Tài khoản → API Keys → Create</strong>.</li>
+    <li>Đặt tên <code>jellyvale-gacha</code>. Để trống IP (hoặc chỉ IP máy chạy web).</li>
+    <li>Bật quyền server: <code>files.read-content</code>, <code>files.query-raw</code>, và <code>control.console</code> (để trừ/cộng Coin khi quay). Không bật power, files.update, files.delete.</li>
+    <li>Lưu rồi <strong>copy key ngay</strong> (panel chỉ hiện một lần).</li>
+    <li>Mở file <code>E:\code\log\web-gacha\.env</code>, dán:
+      <pre>PIKA_BASE_URL=https://hub.pikamc.vn
+PIKA_API_KEY=dan-key-vao-day
+PIKA_SERVER_UUID=
+PIKA_AUTHME_DB=/plugins/AuthMe/authme.db
+PIKA_ECONOMY_DB=/plugins/ExcellentEconomy/data.db</pre>
+    </li>
+    <li>Nếu có nhiều server, copy UUID trên URL panel (<code>/server/xxxxxxxx-....</code>) vào <code>PIKA_SERVER_UUID</code>. Để trống thì web lấy server đầu tiên.</li>
+    <li>Chạy lại <code>start.bat</code> rồi bấm nút test bên dưới.</li>
+  </ol>
+
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+
+  {% if servers %}
+  <div class="ok">Kết nối được. Server trên tài khoản Pika:</div>
+  <ul class="server-list">
+    {% for s in servers %}
+    <li><strong>{{ s.name }}</strong> — <code>{{ s.uuid }}</code></li>
+    {% endfor %}
+  </ul>
+  <p class="hint">Copy UUID server JellyVale vào PIKA_SERVER_UUID nếu danh sách có nhiều hơn 1.</p>
+  {% endif %}
+
+  <form method="post" action="/setup/test">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <button type="submit">Test kết nối PikaMC</button>
+  </form>
+  <p class="soon"><a href="/login">Quay lại đăng nhập</a></p>
+</section>
+{% endblock %}

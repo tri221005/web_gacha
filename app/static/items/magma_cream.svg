@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#12141c"/>
+  <rect x="24" y="28" width="80" height="72" rx="10" fill="#301408" stroke="#4b69ff" stroke-width="3"/>
+  <circle cx="64" cy="56" r="16" fill="#ea580c"/>
+  <circle cx="64" cy="56" r="10" fill="#facc15"/>
+  <text x="64" y="92" text-anchor="middle" fill="#ffedd5" font-size="10" font-family="Segoe UI,sans-serif">Magma Cream</text>
+</svg>

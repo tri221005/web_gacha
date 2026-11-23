@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Đăng nhập · JellyVale{% endblock %}
+{% block page_class %}narrow{% endblock %}
+{% block content %}
+<section class="login-card">
+  <p class="eyebrow"><i></i> JellyVale · Case</p>
+  <h1>Đăng nhập Minecraft</h1>
+  <p class="lead">Nick và mật khẩu khi gõ <strong>/login</strong> trong game. Không dùng Steam.</p>
+  {% if not pika_ready %}
+    <div class="alert">Chưa gắn PikaMC. Vào <a href="/setup">cài đặt</a>.</div>
+  {% endif %}
+  {% if error == "sai" %}<div class="alert">Tên hoặc mật khẩu không đúng.</div>{% endif %}
+  {% if error == "rate" %}<div class="alert">Thử quá nhiều lần.</div>{% endif %}
+  {% if error == "phien" %}<div class="alert">Phiên hết hạn.</div>{% endif %}
+  {% if error == "pika" %}<div class="alert">Không đọc được dữ liệu PikaMC.</div>{% endif %}
+  <form method="post" action="/login" autocomplete="off">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Tên nhân vật <input name="username" required maxlength="32" autofocus></label>
+    <label>Mật khẩu in-game <input name="password" type="password" required maxlength="30"></label>
+    <button class="cf-btn-primary" type="submit" {% if not pika_ready %}disabled{% endif %}>Vào rương</button>
+  </form>
+  <p class="soon"><a href="/admin/login">Đăng nhập quản trị</a></p>
+</section>
+{% endblock %}

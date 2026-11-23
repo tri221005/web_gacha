@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 192">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="80%" r="70%">
+      <stop offset="0%" stop-color="#4b69ff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#0b0e16" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="256" height="192" fill="#0b0e16"/>
+  <rect width="256" height="192" fill="url(#g)"/>
+  <rect x="58" y="52" width="140" height="88" rx="10" fill="#1c2233" stroke="#4b69ff" stroke-width="4"/>
+  <rect x="58" y="52" width="140" height="28" rx="10" fill="#4b69ff" fill-opacity="0.85"/>
+  <circle cx="128" cy="96" r="10" fill="#fbbf24"/>
+  <text x="128" y="168" text-anchor="middle" fill="#f4ecff" font-size="18" font-family="Segoe UI,sans-serif">Starter</text>
+</svg>

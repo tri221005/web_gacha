@@ -1,0 +1,21 @@
+# Local test of the container build. The SQL Server itself runs on the
+# Windows machine, so the web container reaches it over the network.
+#
+#   docker compose up --build
+#
+# Set SQL_SERVER to the address of the SQL Server and SQL_USER /
+# SQL_PASSWORD in `.env` first.
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "8080"
+      # A Docker container on Linux cannot use the Windows integrated login.
+      SQL_USER: "${SQL_USER}"
+      SQL_PASSWORD: "${SQL_PASSWORD}"
+    restart: unless-stopped

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#12141c"/>
+  <rect x="24" y="28" width="80" height="72" rx="10" fill="#142838" stroke="#8847ff" stroke-width="3"/>
+  <path d="M78 40 C65 42 50 55 48 74 C58 70 76 65 78 40 Z" fill="#e0f2fe"/>
+  <line x1="48" y1="74" x2="72" y2="46" stroke="#93c5fd" stroke-width="2"/>
+  <text x="64" y="92" text-anchor="middle" fill="#bae6fd" font-size="10" font-family="Segoe UI,sans-serif">Lông Vũ</text>
+</svg>

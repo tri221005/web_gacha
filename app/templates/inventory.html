@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Túi đồ · JellyVale{% endblock %}
+{% block content %}
+<p class="eyebrow"><i></i> Inventory</p>
+<h1>Túi đồ</h1>
+<p class="lead">Đồ mở rương / thắng battle nằm đây. Bán lấy Coin, hoặc mang sang nâng cấp.</p>
+<div class="toolbar">
+  <span class="cf-chip on">Khả dụng {{ items|length }}</span>
+  <strong style="color:hsl(var(--accent))">{{ worth_fmt }} Coin</strong>
+  <div class="grow"></div>
+  <button id="sell-selected" class="cf-btn-ghost" type="button">Bán món chọn</button>
+  <button id="sell-all" class="cf-btn-primary sell-all-btn" type="button">Bán hết</button>
+</div>
+<div id="hint" class="meta"></div>
+<div class="contents" id="bag">
+  {% for item in items %}
+  <article class="item-card inv-card pick" style="--rarity: {{ item.color }}; box-shadow: inset 0 -2px 0 0 {{ item.color }}">
+    <label>
+      <input type="checkbox" name="id" value="{{ item.id }}">
+      <div class="art"><img src="{{ item.image }}" alt="{{ item.name }}"></div>
+      <div class="name">{{ item.name }}</div>
+    </label>
+    <div class="meta-row">
+      <span class="price">{{ item.value_fmt }} Coin</span>
+      <span class="chance" style="color:hsl(var(--positive))">Giữ</span>
+    </div>
+    <div class="inv-actions">
+      <button class="cf-btn-ghost sell-one" type="button" data-id="{{ item.id }}">Bán</button>
+      <button class="cf-btn-ghost" type="button" disabled title="Rút đồ vào server — làm sau">Rút</button>
+    </div>
+  </article>
+  {% else %}
+  <p class="lead" style="grid-column:1/-1;text-align:center;padding:48px 0;color:hsl(var(--text-faint))">Túi trống. <a href="/gacha">Mở rương</a> hoặc vào <a href="/battles">battle</a>.</p>
+  {% endfor %}
+</div>
+<script>
+  const csrf = document.querySelector("meta[name=csrf]").content;
+  const hint = document.getElementById("hint");
+  function selected() {
+    return [...document.querySelectorAll("#bag input:checked")].map((el) => Number(el.value));
+  }
+  async function sell(ids, all=false) {
+    const url = all ? "/api/inventory/sell-all" : "/api/inventory/sell";
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF": csrf },
+      body: JSON.stringify({ ids })
+    });
+    const data = await res.json();
+    if (!res.ok) { hint.textContent = data.detail; return; }
+    location.reload();
+  }
+  document.getElementById("sell-selected")?.addEventListener("click", () => {
+    const ids = selected();
+    if (!ids.length) { hint.textContent = "Chọn món trước."; return; }
+    sell(ids);
+  });
+  document.getElementById("sell-all")?.addEventListener("click", () => sell([], true));
+  document.querySelectorAll(".sell-one").forEach((btn) => {
+    btn.addEventListener("click", () => sell([Number(btn.dataset.id)]));
+  });
+
+  /* The bag is polled so items that arrive while the page is open, for
+   * example from a battle that just finished, show up on their own.
+   */
+  (function () {
+    const bag = document.getElementById("bag");
+    const countChip = document.querySelector(".toolbar .cf-chip");
+    const worthEl = document.querySelector(".toolbar strong");
+    if (!bag || !window.JVRealtime) return;
+
+    function esc(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll('"', "&quot;");
+    }
+
+    function card(item) {
+      return '<article class="item-card inv-card pick" style="--rarity: ' +
+        esc(item.color) + '; box-shadow: inset 0 -2px 0 0 ' + esc(item.color) + '">' +
+        '<label><input type="checkbox" name="id" value="' + esc(item.id) + '">' +
+        '<div class="art"><img src="' + esc(item.image) + '" alt="' + esc(item.name) + '"></div>' +
+        '<div class="name">' + esc(item.name) + "</div></label>" +
+        '<div class="meta-row"><span class="price">' + esc(item.value_fmt) +
+        ' Coin</span><span class="chance" style="color:hsl(var(--positive))">Giữ</span></div>' +
+        '<div class="inv-actions"><button class="cf-btn-ghost sell-one" type="button" data-id="' +
+        esc(item.id) + '">Bán</button>' +
+        '<button class="cf-btn-ghost" type="button" disabled title="Rút đồ vào server — làm sau">Rút</button>' +
+        "</div></article>";
+    }
+
+    window.JVRealtime.poll("/api/inventory", function (data) {
+      const items = data.items || [];
+      if (countChip) countChip.textContent = "Khả dụng " + data.count;
+      if (worthEl) worthEl.textContent = data.worth_fmt + " Coin";
+      if (!items.length) return;
+      // Only rebuild when the set of items actually changed, so the
+      // checkboxes the player ticked are not thrown away.
+      const wanted = items.map((i) => i.id).join(",");
+      if (bag.dataset.sig === wanted) return;
+      bag.dataset.sig = wanted;
+      bag.innerHTML = items.map(card).join("");
+      bag.querySelectorAll(".sell-one").forEach((btn) => {
+        btn.addEventListener("click", () => sell([Number(btn.dataset.id)]));
+      });
+    }, { delay: 6000 });
+  })();
+</script>
+{% endblock %}

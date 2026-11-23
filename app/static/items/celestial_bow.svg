@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#12141c"/>
+  <rect x="24" y="28" width="80" height="72" rx="10" fill="#102436" stroke="#d32ce6" stroke-width="3"/>
+  <path d="M50 40 Q74 56 50 72" fill="none" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+  <line x1="50" y1="40" x2="50" y2="72" stroke="#f472b6" stroke-width="2"/>
+  <line x1="44" y1="56" x2="74" y2="56" stroke="#fbbf24" stroke-width="3"/>
+  <text x="64" y="92" text-anchor="middle" fill="#e0f2fe" font-size="10" font-family="Segoe UI,sans-serif">Cung Ánh Sáng</text>
+</svg>

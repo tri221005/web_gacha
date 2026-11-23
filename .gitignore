@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Secret
+.env
+
+# Data / dumps
+downloads/
+data/
+*.sql
+jellyvale_full.sql
+
+# Tooling output
+.ua/
+.codegraph/
+shots/
+_portable_test/
+__pycache__/
+
+# Reference repos that are not part of the web app
+caseforge-main/
+Nexo/
+
+# Logs
+*.log
+
+# Build artifacts
+*.zip

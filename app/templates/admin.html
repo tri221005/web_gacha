@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}Quản trị · JellyVale{% endblock %}
+{% block content %}
+<section class="admin-shell">
+  <header class="admin-head">
+    <div class="admin-head-copy">
+      <p class="eyebrow"><i></i> Bảng điều khiển</p>
+      <h1>Quản trị JellyVale</h1>
+      <p class="lead">Sổ gacha trong SQL Server là nguồn sự thật. Mọi thao tác tiền thật đều đi qua console server Minecraft trước.</p>
+    </div>
+    <div class="admin-head-side">
+      <div class="admin-status" id="server-status">
+        <span class="dot"></span><span class="txt">Đang kiểm tra server…</span>
+      </div>
+      <button class="ghost" type="button" id="admin-refresh">Làm mới</button>
+    </div>
+  </header>
+
+  <nav class="admin-tabs" role="tablist">
+    <a class="admin-tab {% if tab == 'overview' %}on{% endif %}" href="/admin?tab=overview" data-tab="overview">Tổng quan</a>
+    <a class="admin-tab {% if tab == 'players' %}on{% endif %}" href="/admin?tab=players" data-tab="players">Người chơi</a>
+    <a class="admin-tab {% if tab == 'cases' %}on{% endif %}" href="/admin?tab=cases" data-tab="cases">Rương</a>
+    <a class="admin-tab {% if tab == 'tx' %}on{% endif %}" href="/admin?tab=tx" data-tab="tx">Giao dịch</a>
+    <a class="admin-tab {% if tab == 'battles' %}on{% endif %}" href="/admin?tab=battles" data-tab="battles">Battle</a>
+    <a class="admin-tab {% if tab == 'admins' %}on{% endif %}" href="/admin?tab=admins" data-tab="admins">Đội ngũ admin</a>
+    <a class="admin-tab {% if tab == 'log' %}on{% endif %}" href="/admin?tab=log" data-tab="log">Nhật ký</a>
+  </nav>
+
+  {# ---------------- Tổng quan ---------------- #}
+  <section class="admin-panel {% if tab != 'overview' %}hidden{% endif %}" data-panel="overview">
+    <div class="grid stats">
+      <div class="mini"><span>Lượt mở</span><strong>{{ stats.pulls }}</strong></div>
+      <div class="mini"><span>Coin trừ rương</span><strong>{{ spent }}</strong></div>
+      <div class="mini"><span>Giá trị drop</span><strong>{{ paid }}</strong></div>
+      <div class="mini"><span>Chênh lệch</span><strong>{{ net }}</strong></div>
+      <div class="mini"><span>Battle xong</span><strong>{{ stats.battles }}</strong></div>
+      <div class="mini"><span>Đồ đã bán</span><strong>{{ stats.sells }}</strong></div>
+      <div class="mini"><span>Đồ đang giữ</span><strong>{{ stats.held }}</strong></div>
+      <div class="mini"><span>Nâng cấp thắng</span><strong>{{ stats.upgrade_wins }}/{{ stats.upgrades }}</strong></div>
+      <div class="mini"><span>Người chơi</span><strong>{{ stats.users }}</strong></div>
+      <div class="mini"><span>Giá mở rương</span><strong>{{ cost }}</strong></div>
+      <div class="mini"><span>Người bị cấm</span><strong>{{ bans|length }}</strong></div>
+    </div>
+
+    <div class="admin-two">
+      <div class="admin-block">
+        <h2>Theo độ hiếm</h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Rarity</th><th>Lượt</th><th>Giá trị</th></tr></thead>
+            <tbody>
+              {% for row in stats.by_rarity %}
+              <tr><td>{{ row.rarity }}</td><td>{{ row.n }}</td><td>{{ row.paid_fmt }}</td></tr>
+              {% else %}
+              <tr><td colspan="3">Chưa có lượt quay.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="admin-block">
+        <h2>Người chơi chi nhiều nhất</h2>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Player</th><th>Lượt</th><th>Đã chi</th></tr></thead>
+            <tbody>
+              {% for row in stats.top %}
+              <tr>
+                <td><a href="/admin/player/{{ row.player }}">{{ row.player }}</a></td>
+                <td>{{ row.n }}</td><td>{{ row.spent_fmt }}</td>
+              </tr>
+              {% else %}
+              <tr><td colspan="3">Chưa có dữ liệu.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-block">
+      <h2>40 lượt gần nhất</h2>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Thời gian</th><th>Player</th><th>Rương</th><th>Giải</th><th>Giá</th></tr></thead>
+          <tbody>
+            {% for row in stats.recent %}
+            <tr>
+              <td>{{ row.when }}</td>
+              <td><a href="/admin/player/{{ row.player }}">{{ row.player }}</a></td>
+              <td>{{ row.case_id }}</td>
+              <td>{{ row.prize_name }}</td>
+              <td>{{ row.prize_fmt }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5">Chưa có lượt quay.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  {# ---------------- Người chơi ---------------- #}
+  <section class="admin-panel {% if tab != 'players' %}hidden{% endif %}" data-panel="players">
+    <div class="toolbar">
+      <input type="search" id="players-search" placeholder="Tìm theo tên người chơi" aria-label="Tìm người chơi">
+      <label class="check"><input type="checkbox" id="players-bots" checked> Hiện bot</label>
+      <span class="meta" id="players-count"></span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Player</th><th>Số dư</th><th>Lượt</th><th>Đã chi</th><th>Đang giữ</th><th>Thao tác</th></tr></thead>
+        <tbody id="players-body"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="players-empty" hidden>Chưa có người chơi nào khớp.</p>
+  </section>
+
+  {# ---------------- Rương ---------------- #}
+  <section class="admin-panel {% if tab != 'cases' %}hidden{% endif %}" data-panel="cases">
+    <div class="toolbar">
+      <button class="cf-btn-primary" type="button" id="case-new">Thêm rương</button>
+      <span class="meta" id="cases-note">Sửa rương ghi thẳng vào <code>gacha.json</code>. Bản cũ được giữ ở <code>gacha.json.bak</code>.</span>
+    </div>
+    <div id="cases-list" class="case-admin-list"></div>
+  </section>
+
+  {# ---------------- Giao dịch ---------------- #}
+  <section class="admin-panel {% if tab != 'tx' %}hidden{% endif %}" data-panel="tx">
+    <div class="toolbar">
+      <input type="search" id="tx-search" placeholder="Tìm theo tên người chơi" aria-label="Tìm giao dịch">
+      <select id="tx-kind" aria-label="Loại giao dịch">
+        <option value="">Mọi loại</option>
+        <option value="open">Mở rương</option>
+        <option value="sell">Bán đồ</option>
+        <option value="battle_pay">Vào battle</option>
+        <option value="refund">Hoàn Coin</option>
+        <option value="bonus">Bonus ngày</option>
+        <option value="sync">Đồng bộ PikaMC</option>
+        <option value="admin">Admin điều chỉnh</option>
+      </select>
+      <span class="meta" id="tx-count"></span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Thời gian</th><th>Player</th><th>Loại</th><th>Số tiền</th><th>Ghi chú</th></tr></thead>
+        <tbody id="tx-body"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="tx-empty" hidden>Chưa có giao dịch nào khớp.</p>
+  </section>
+
+  {# ---------------- Battle ---------------- #}
+  <section class="admin-panel {% if tab != 'battles' %}hidden{% endif %}" data-panel="battles">
+    <div class="toolbar">
+      <button class="ghost" type="button" id="battles-refresh">Tải lại</button>
+      <span class="meta" id="battles-count"></span>
+    </div>
+    <div id="battles-list" class="battle-admin-list"></div>
+  </section>
+
+  {# ---------------- Đội ngũ admin ---------------- #}
+  <section class="admin-panel {% if tab != 'admins' %}hidden{% endif %}" data-panel="admins">
+    <div class="toolbar">
+      <button class="ghost" type="button" id="admins-refresh">Tải lại từ server</button>
+      <span class="meta" id="admins-meta"></span>
+    </div>
+    <div class="admin-form-row">
+      <input type="text" id="admin-new-name" placeholder="Tên tài khoản Minecraft" aria-label="Tên tài khoản admin mới" maxlength="32">
+      <button class="cf-btn-primary" type="button" id="admin-grant">Cấp quyền admin</button>
+    </div>
+    <p class="hint" id="admins-error" hidden></p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Tài khoản</th><th>Web console</th><th>Server Minecraft</th><th>Nguồn</th><th>Thao tác</th></tr></thead>
+        <tbody id="admins-body"></tbody>
+      </table>
+    </div>
+    <p class="hint">Danh sách trên server là nguồn sự thật. Cấp hoặc gỡ quyền sẽ chạy lệnh <code>lp user &lt;tên&gt; parent add/remove {{ server_group }}</code> ngay trên server, rồi cập nhật danh sách web.</p>
+  </section>
+
+  {# ---------------- Nhật ký ---------------- #}
+  <section class="admin-panel {% if tab != 'log' %}hidden{% endif %}" data-panel="log">
+    <div class="toolbar">
+      <button class="ghost" type="button" id="log-refresh">Tải lại</button>
+      <span class="meta" id="log-count"></span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Thời gian</th><th>Admin</th><th>Hành động</th><th>Đối tượng</th><th>Chi tiết</th></tr></thead>
+        <tbody id="log-body"></tbody>
+      </table>
+    </div>
+    <p class="hint" id="log-empty" hidden>Chưa có thao tác nào được ghi.</p>
+  </section>
+</section>
+
+<div class="admin-toast" id="admin-toast" role="status" aria-live="polite"></div>
+<script src="/static/admin.js"></script>
+{% endblock %}

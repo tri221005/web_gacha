@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}JellyVale — Mở rương Minecraft{% endblock %}
+{% block content %}
+{% if dry_run %}
+<div class="banner">Chế độ thiết kế: ví web để chơi battle / bán đồ. Console đang tắt, chưa trừ Coin in-game.</div>
+{% endif %}
+
+<section class="hero">
+  <div class="hero-wash"></div>
+  <div class="hero-inner">
+    <div class="hero-copy">
+      <p class="eyebrow"><i></i> 90% RTP · roll trên server</p>
+      <h1>Mở rương JellyVale. Đồ vào túi, bán hoặc mang đi battle.</h1>
+      <p class="lead">Catalogue, dải quay, nâng cấp và case battle với bot — cùng một nền kinh tế Coin.</p>
+      <div class="hero-actions">
+        <a class="cf-btn-primary" href="#cases">Chọn rương</a>
+        {% if player %}
+        <a class="cf-btn-ghost" href="/inventory">Túi đồ</a>
+        {% else %}
+        <a class="cf-btn-ghost" href="/login">Đăng nhập Minecraft</a>
+        {% endif %}
+      </div>
+    </div>
+    <dl class="hero-stats">
+      <div class="hero-stat"><strong>{{ site.cases }}</strong><span>Rương</span></div>
+      <div class="hero-stat"><strong>{{ site.item_count }}</strong><span>Món đồ</span></div>
+    </dl>
+  </div>
+</section>
+
+<section class="stats-bar">
+  <div><span>Đã mở</span><strong>{{ site.pulls }}</strong></div>
+  <div><span>Nâng cấp</span><strong>{{ site.upgrades }}</strong></div>
+  <div><span>Battle</span><strong>{{ site.battles }}</strong></div>
+  <div><span>Tài khoản</span><strong>{{ site.users }}</strong></div>
+  <div><span>Online</span><strong>{{ site.online }}</strong></div>
+</section>
+
+<section class="promo-row">
+  <a class="promo-card" href="/bonus">
+    <div class="copy">
+      <div class="kicker">Bonus ngày</div>
+      <strong>{% if not player %}Đăng nhập để quay{% elif bonus_ready %}Sẵn sàng quay{% else %}Đã nhận hôm nay{% endif %}</strong>
+      <span>Vòng miễn phí, Coin vào ví web</span>
+    </div>
+    {% if bonus_ready %}<span class="cf-btn-primary promo-cta">Quay</span>{% endif %}
+  </a>
+  <a class="promo-card" href="/battles">
+    <div class="copy">
+      <div class="kicker">Case battle</div>
+      <strong>Chơi cùng bot</strong>
+      <span>Người tổng cao lấy hết đồ</span>
+    </div>
+  </a>
+  <a class="promo-card" href="/upgrade">
+    <div class="copy">
+      <div class="kicker">Upgrade</div>
+      <strong>Nâng cấp đồ</strong>
+      <span>Cược món rẻ, lấy món đắt hơn</span>
+    </div>
+  </a>
+</section>
+
+<section id="cases">
+  <h2>Rương</h2>
+  <div class="case-grid">
+    {% for case in cases %}
+    <a class="case-card" href="/case/{{ case.id }}" style="--glow: {{ case.glow }}">
+      <div class="case-art" style="--glow: {{ case.glow }}33">
+        <img src="{{ case.image }}" alt="{{ case.name }}">
+      </div>
+      <div class="case-line" style="--glow: {{ case.glow }}"></div>
+      <div class="body">
+        <div>{{ case.name }}</div>
+        <div class="meta" style="margin-top:6px">
+          <span class="price">{{ case.cost_fmt }} Coin</span>
+          <span class="count">{{ case.loot|length }} món</span>
+        </div>
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

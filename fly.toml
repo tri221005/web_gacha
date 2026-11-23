@@ -1,0 +1,9 @@
+[build]
+  builder = "paketobuildpacks/builder:base"
+
+[deploy]
+  startCommand = "python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips=*"
+
+[env]
+  PORT = "8080"
+  HOST = "0.0.0.0"

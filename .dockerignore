@@ -1,0 +1,25 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.git/
+.gitignore
+
+# The secret file must never end up in an image layer.
+.env
+.env.*
+
+# Big local-only data
+downloads/
+data/
+*.sql
+shots/
+.ua/
+.codegraph/
+_portable_test/
+
+# Reference repos that are not part of the web app
+caseforge-main/
+Nexo/
+
+*.log

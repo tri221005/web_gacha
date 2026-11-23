@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Bonus · JellyVale{% endblock %}
+{% block content %}
+<p class="eyebrow"><i></i> Daily bonus</p>
+<h1>Vòng quay ngày</h1>
+<p class="lead">Một lượt mỗi 24 giờ. Coin vào ví web. Tỉ lệ đúng theo miếng trên bánh xe.</p>
+
+<section class="cf-panel bonus-panel">
+  <div class="wheel-holder">
+    <div class="wheel-pointer"></div>
+    <div id="wheel" class="wheel"></div>
+  </div>
+  <p id="hint" class="meta">{% if bonus_ready %}Sẵn sàng quay.{% else %}Đã nhận hôm nay, quay lại sau.{% endif %}</p>
+  <p id="prize" class="amount" style="font-size:28px;min-height:1.2em"></p>
+  {% if player %}
+  <button id="spin" class="cf-btn-primary" type="button" {% if not bonus_ready %}disabled{% endif %}>Quay bonus</button>
+  {% else %}
+  <a class="cf-btn-primary" href="/login">Đăng nhập để quay</a>
+  {% endif %}
+</section>
+<script>
+  const slices = {{ slices_json | safe }};
+  const total = slices.reduce((n, s) => n + s.weight, 0);
+  let angle = 0;
+  slices.forEach((s) => { s.frac = s.weight / total; });
+  const fills = ["#2a2f3a", "#1d212a"];
+  const wheel = document.getElementById("wheel");
+  const stops = [];
+  let acc = 0;
+  const parts = slices.map((s, i) => {
+    const start = acc * 360;
+    acc += s.frac;
+    stops.push({ start, end: acc * 360, amount: s.amount });
+    return `${fills[i % 2]} ${start}deg ${acc * 360}deg`;
+  });
+  wheel.style.background = `conic-gradient(from -90deg, ${parts.join(",")})`;
+
+  const csrf = document.querySelector("meta[name=csrf]")?.content;
+  document.getElementById("spin")?.addEventListener("click", async () => {
+    const btn = document.getElementById("spin");
+    btn.disabled = true;
+    const res = await fetch("/api/bonus", { method: "POST", headers: { "X-CSRF": csrf } });
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById("hint").textContent = data.detail;
+      return;
+    }
+    const slice = stops.find((s) => s.amount === data.amount) || stops[0];
+    const mid = (slice.start + slice.end) / 2;
+    const target = 5 * 360 - mid;
+    wheel.style.transition = "none";
+    wheel.style.transform = `rotate(${angle}deg)`;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        wheel.style.transition = "transform 4.6s cubic-bezier(0.12, 0.78, 0.1, 1)";
+        angle = target;
+        wheel.style.transform = `rotate(${target}deg)`;
+      });
+    });
+    setTimeout(() => {
+      document.getElementById("prize").textContent = "+" + data.amount_fmt + " Coin";
+      document.getElementById("hint").textContent = "Đã cộng vào ví.";
+      const chip = document.querySelector(".coin-chip span");
+      if (chip) chip.textContent = data.balance_fmt + " Coin";
+    }, 4600);
+  });
+</script>
+{% endblock %}

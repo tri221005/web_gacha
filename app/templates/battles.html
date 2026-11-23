@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Battle · JellyVale{% endblock %}
+{% block content %}
+<p class="eyebrow"><i></i> Case battles</p>
+<h1>Battle cùng bot</h1>
+<p class="lead">Mọi ghế mở cùng rương. Standard: tổng cao thắng hết. Crazy: tổng thấp thắng.</p>
+
+<section class="cf-panel" style="padding:20px;margin-bottom:28px">
+  <h2 style="margin-top:0">Tạo trận</h2>
+  <div class="create-grid">
+    <label>Rương
+      <select id="case-id">
+        {% for case in cases %}
+        <option value="{{ case.id }}" data-cost="{{ case.pull_cost }}">{{ case.name }} · {{ case.cost_fmt }}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <label>Ghế
+      <select id="slots"><option>2</option><option>3</option><option>4</option></select>
+    </label>
+    <label>Vòng
+      <select id="rounds"><option>1</option><option>2</option><option>3</option><option>5</option></select>
+    </label>
+    <label>Chế độ
+      <select id="mode">
+        <option value="STANDARD">Standard</option>
+        <option value="CRAZY">Crazy</option>
+      </select>
+    </label>
+  </div>
+  <label class="check" style="margin-top:12px"><input id="fill-bots" type="checkbox" checked> Gọi bot ngồi hết ghế (bạn bấm Bắt đầu để quay)</label>
+  <p id="create-hint" class="meta"></p>
+  <div class="actions" style="justify-content:flex-start;margin-top:14px">
+    {% if player %}
+    <button id="create" class="cf-btn-primary" type="button">Tạo battle</button>
+    {% else %}
+    <a class="cf-btn-primary" href="/login">Đăng nhập để tạo</a>
+    {% endif %}
+  </div>
+</section>
+
+<h2>Phòng chờ</h2>
+<div class="battle-list" id="lobby-open">
+  {% for b in open_battles %}
+  {% include "partials/battle_card.html" %}
+  {% else %}
+  <p class="meta">Chưa có trận. Tạo một trận hoặc đợi bot mở.</p>
+  {% endfor %}
+</div>
+
+<h2>Vừa xong</h2>
+<div class="battle-list" id="lobby-finished">
+  {% for b in finished %}
+  {% include "partials/battle_card.html" %}
+  {% endfor %}
+</div>
+{% if player %}
+<script>
+  const csrf = document.querySelector("meta[name=csrf]").content;
+  document.getElementById("create")?.addEventListener("click", async () => {
+    const btn = document.getElementById("create");
+    btn.disabled = true;
+    const res = await fetch("/api/battles", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRF": csrf },
+      body: JSON.stringify({
+        case_id: document.getElementById("case-id").value,
+        slots: Number(document.getElementById("slots").value),
+        rounds: Number(document.getElementById("rounds").value),
+        mode: document.getElementById("mode").value,
+        fill_bots: document.getElementById("fill-bots").checked
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      document.getElementById("create-hint").textContent = data.detail;
+      btn.disabled = false;
+      return;
+    }
+    location.href = "/battles/" + data.id;
+  });
+</script>
+{% endif %}
+
+<script>
+/* The bots open rooms on their own, so the lobby is polled and rebuilt
+ * in place. A room shows up as soon as it exists, without a reload.
+ */
+(function () {
+  const openBox = document.getElementById("lobby-open");
+  const finishedBox = document.getElementById("lobby-finished");
+  if (!openBox || !finishedBox) return;
+  const me = {{ (player or '')|tojson }};
+
+  function esc(value) {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll('"', "&quot;");
+  }
+
+  function card(b) {
+    const seats = [];
+    for (let i = 0; i < b.slots; i++) {
+      const p = (b.players || [])[i];
+      if (p) {
+        const mine = me && p.player === me;
+        seats.push(
+          '<span class="seat-pill ' + (b.winner === p.player ? "win" : "") + '">' +
+          '<span class="avatar" style="width:22px;height:22px;font-size:9px">' +
+          esc(String(p.player || "").slice(0, 2).toUpperCase()) + "</span> " +
+          esc(mine ? "Bạn" : p.player) +
+          (p.is_bot ? '<em class="bot-tag">bot</em>' : "") +
+          "</span>"
+        );
+      } else {
+        seats.push('<span class="seat-free">Trống</span>');
+      }
+    }
+    const waiting = b.status === "WAITING";
+    return '<article class="cf-panel battle-card">' +
+      '<div class="battle-card-top">' +
+      '<span class="mode-pill ' + (b.mode === "CRAZY" ? "crazy" : "") + '">' +
+      esc(b.mode_label) + "</span>" +
+      "<span>Vòng: " + esc(b.rounds) + "</span>" +
+      '<span style="margin-left:auto">' + esc(b.status) + " · " +
+      esc(b.seated) + "/" + esc(b.slots) + "</span></div>" +
+      '<div class="battle-cases"><img src="' + esc(b.case_image) + '" alt="">' +
+      "<strong>" + esc(b.case_name) + "</strong></div>" +
+      '<div class="seat-pills">' + seats.join("") + "</div>" +
+      '<div class="battle-foot"><div><span class="meta">' +
+      (waiting ? "Ghế" : "Pot") + '</span><strong class="price"> ' +
+      esc(b.price_fmt) + " Coin</strong></div>" +
+      '<div style="display:flex;gap:8px;align-items:center">' +
+      (b.winner ? '<span class="meta">Thắng: ' + esc(b.winner) + "</span>" : "") +
+      '<a class="' + (waiting ? "cf-btn-primary" : "cf-btn-ghost") +
+      ' battle-enter" href="/battles/' + esc(b.id) + '">' +
+      (waiting ? "Vào" : "Xem") + "</a></div></div></article>";
+  }
+
+  function paint(box, list, emptyText) {
+    if (!list.length) {
+      if (box.dataset.empty !== "1") {
+        box.innerHTML = '<p class="meta">' + esc(emptyText) + "</p>";
+        box.dataset.empty = "1";
+      }
+      return;
+    }
+    box.innerHTML = list.map(card).join("");
+    box.dataset.empty = "0";
+  }
+
+  if (!window.JVRealtime) return;
+  window.JVRealtime.poll("/api/battles/lobby", function (data) {
+    paint(openBox, data.open || [], "Chưa có trận. Tạo một trận hoặc đợi bot mở.");
+    paint(finishedBox, data.finished || [], "");
+  }, { delay: 4000 });
+})();
+</script>
+{% endblock %}

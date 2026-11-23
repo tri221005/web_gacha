@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Đăng nhập quản trị · JellyVale{% endblock %}
+{% block page_class %}narrow{% endblock %}
+{% block content %}
+<section class="login-card admin-login-card">
+  <p class="eyebrow"><i></i> JellyVale · Quản trị</p>
+  <h1>Đăng nhập bảng điều khiển</h1>
+  <p class="lead">Tài khoản quản trị tách khỏi tài khoản Minecraft. Không cần mật khẩu trong game.</p>
+
+    {% if not password_set %}
+  <div class="alert">
+    Chưa đặt <code>ADMIN_PASSWORD</code> trong <code>.env</code>. Tên quản trị vẫn phải
+    kèm mật khẩu Minecraft để vào. Đặt <code>ADMIN_PASSWORD</code> để có mật khẩu riêng.
+  </div>
+  {% endif %}
+
+  {% if error == "sai" %}<div class="alert">Tên hoặc mật khẩu quản trị không đúng.</div>{% endif %}
+  {% if error == "rate" %}<div class="alert">Thử quá nhiều lần. Chờ vài phút rồi thử lại.</div>{% endif %}
+  {% if error == "phien" %}<div class="alert">Phiên hết hạn. Thử lại.</div>{% endif %}
+
+  <form method="post" action="/admin/login" autocomplete="off">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <label>Tên quản trị <input name="username" required maxlength="32" autofocus autocomplete="username"></label>
+    <label>Mật khẩu quản trị <input name="password" type="password" required maxlength="64" autocomplete="current-password"></label>
+    <button class="cf-btn-primary" type="submit">Vào bảng điều khiển</button>
+  </form>
+
+  <p class="hint">Quay lại <a href="/gacha">trang rương</a></p>
+</section>
+{% endblock %}

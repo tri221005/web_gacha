@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#12141c"/>
+  <rect x="24" y="28" width="80" height="72" rx="10" fill="#382a0a" stroke="#e4ae39" stroke-width="3"/>
+  <circle cx="64" cy="56" r="18" fill="#fbbf24"/>
+  <polygon points="64,44 68,52 76,54 70,60 72,68 64,64 56,68 58,60 52,54 60,52" fill="#ef4444"/>
+  <text x="64" y="92" text-anchor="middle" fill="#fef3c7" font-size="8" font-family="Segoe UI,sans-serif">Kho Báu Bất Tận</text>
+</svg>

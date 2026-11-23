@@ -1,0 +1,49 @@
+# Render blueprint.
+#
+# Render free tier: web service sleeps after 15 minutes of no traffic and
+# only gives 750 free hours a month, which is enough for a game site with
+# a handful of players.
+#
+# The service needs a Docker build, not the Python runtime, because the app
+# connects to SQL Server through pyodbc and needs the Microsoft ODBC driver.
+services:
+  - type: web
+    name: jellyvale-gacha
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: HOST
+        value: "0.0.0.0"
+      - key: PORT
+        value: "8080"
+      - key: SESSION_HTTPS_ONLY
+        value: "auto"
+      - key: SQL_SERVER
+        sync: false
+      - key: SQL_DATABASE
+        value: jellyvale
+      - key: SQL_USER
+        sync: false
+      - key: SQL_PASSWORD
+        sync: false
+      - key: SQL_TRUST_SERVER_CERTIFICATE
+        value: "yes"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: PIKA_BASE_URL
+        value: https://hub.pikamc.vn
+      - key: PIKA_API_KEY
+        sync: false
+      - key: PIKA_SERVER_UUID
+        sync: false
+      - key: ADMIN_USERS
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_GROUP
+        value: admin
+      - key: ADMIN_SYNC_SECONDS
+        value: "30"
+      - key: GACHA_DRY_RUN
+        value: "false"

@@ -1,0 +1,419 @@
+{
+  "take_command": "eco take {player} {amount}",
+  "give_command": "eco give {player} {amount}",
+  "cases": [
+    {
+      "id": "jelly-starter",
+      "name": "Rương Jelly Starter EDIT",
+      "description": "Rương thử cho người mới. Đồ cơ bản dễ mở, tỷ lệ trúng vừa sức.",
+      "pull_cost": 5000,
+      "items": [
+        {
+          "id": "dust",
+          "name": "Bụi vàng",
+          "rarity": "consumer",
+          "weight": 42.0,
+          "coin": 500
+        },
+        {
+          "id": "apple",
+          "name": "Táo vàng",
+          "rarity": "consumer",
+          "weight": 18.0,
+          "coin": 900
+        },
+        {
+          "id": "pouch",
+          "name": "Túi Coin",
+          "rarity": "industrial",
+          "weight": 16.0,
+          "coin": 2500
+        },
+        {
+          "id": "iron",
+          "name": "Thỏi sắt",
+          "rarity": "industrial",
+          "weight": 10.0,
+          "coin": 3200
+        },
+        {
+          "id": "scroll",
+          "name": "White Scroll",
+          "rarity": "milspec",
+          "weight": 8.0,
+          "coin": 8000
+        },
+        {
+          "id": "book",
+          "name": "Sách phù phép",
+          "rarity": "restricted",
+          "weight": 4.0,
+          "coin": 15000
+        },
+        {
+          "id": "netherite",
+          "name": "Phôi Netherite",
+          "rarity": "classified",
+          "weight": 1.5,
+          "coin": 25000
+        },
+        {
+          "id": "jackpot",
+          "name": "Jackpot Starter",
+          "rarity": "covert",
+          "weight": 0.5,
+          "coin": 80000
+        },
+        {
+          "id": "zzz_test_item",
+          "name": "Món thử",
+          "rarity": "consumer",
+          "weight": 2.0,
+          "coin": 1234
+        }
+      ]
+    },
+    {
+      "id": "jelly-magic",
+      "name": "Rương Ma Pháp",
+      "description": "Chứa đựng các cổ vật ma pháp bí ẩn, ngọc phù phép và đinh ba.",
+      "pull_cost": 15000,
+      "items": [
+        {
+          "id": "amethyst",
+          "name": "Mảnh thạch anh tím",
+          "rarity": "industrial",
+          "weight": 38,
+          "coin": 3000
+        },
+        {
+          "id": "ender_pearl",
+          "name": "Ngọc Ender",
+          "rarity": "industrial",
+          "weight": 26,
+          "coin": 5500
+        },
+        {
+          "id": "glowstone",
+          "name": "Bụi phát sáng",
+          "rarity": "milspec",
+          "weight": 18,
+          "coin": 10000
+        },
+        {
+          "id": "trident",
+          "name": "Đinh ba Thủy thần",
+          "rarity": "restricted",
+          "weight": 10,
+          "coin": 22000
+        },
+        {
+          "id": "magic_staff",
+          "name": "Trượng Ma Pháp",
+          "rarity": "classified",
+          "weight": 5,
+          "coin": 45000
+        },
+        {
+          "id": "totem",
+          "name": "Totem bất tử",
+          "rarity": "classified",
+          "weight": 2.2,
+          "coin": 70000
+        },
+        {
+          "id": "magic_orb",
+          "name": "Ngọc Cổ Đại",
+          "rarity": "covert",
+          "weight": 0.8,
+          "coin": 150000
+        }
+      ]
+    },
+    {
+      "id": "jelly-elite",
+      "name": "Rương Elite",
+      "description": "Rương cao cấp được ưa chuộng, có tỉ lệ nổ Totem và Mangekyo.",
+      "pull_cost": 25000,
+      "items": [
+        {
+          "id": "pouch",
+          "name": "Túi Coin",
+          "rarity": "industrial",
+          "weight": 22,
+          "coin": 4000
+        },
+        {
+          "id": "scroll",
+          "name": "White Scroll",
+          "rarity": "milspec",
+          "weight": 24,
+          "coin": 8000
+        },
+        {
+          "id": "diamond",
+          "name": "Kim cương",
+          "rarity": "milspec",
+          "weight": 16,
+          "coin": 12000
+        },
+        {
+          "id": "book",
+          "name": "Sách Elite",
+          "rarity": "restricted",
+          "weight": 16,
+          "coin": 20000
+        },
+        {
+          "id": "totem",
+          "name": "Totem bất tử",
+          "rarity": "restricted",
+          "weight": 10,
+          "coin": 28000
+        },
+        {
+          "id": "netherite",
+          "name": "Khối Netherite",
+          "rarity": "classified",
+          "weight": 7,
+          "coin": 40000
+        },
+        {
+          "id": "elytra",
+          "name": "Elytra",
+          "rarity": "classified",
+          "weight": 3,
+          "coin": 70000
+        },
+        {
+          "id": "susanoo",
+          "name": "Mangekyo",
+          "rarity": "covert",
+          "weight": 1.5,
+          "coin": 120000
+        },
+        {
+          "id": "jackpot",
+          "name": "Jackpot Elite",
+          "rarity": "extraordinary",
+          "weight": 0.5,
+          "coin": 400000
+        }
+      ]
+    },
+    {
+      "id": "jelly-vault",
+      "name": "Rương Vault",
+      "description": "Rương kho báu kinh điển cho case battle. Giá trị cực cao.",
+      "pull_cost": 50000,
+      "items": [
+        {
+          "id": "book",
+          "name": "Sách Vault",
+          "rarity": "restricted",
+          "weight": 28,
+          "coin": 22000
+        },
+        {
+          "id": "totem",
+          "name": "Totem bất tử",
+          "rarity": "restricted",
+          "weight": 22,
+          "coin": 28000
+        },
+        {
+          "id": "netherite",
+          "name": "Khối Netherite",
+          "rarity": "classified",
+          "weight": 20,
+          "coin": 40000
+        },
+        {
+          "id": "elytra",
+          "name": "Elytra",
+          "rarity": "classified",
+          "weight": 14,
+          "coin": 70000
+        },
+        {
+          "id": "susanoo",
+          "name": "Mangekyo",
+          "rarity": "covert",
+          "weight": 9,
+          "coin": 120000
+        },
+        {
+          "id": "dragon",
+          "name": "Trứng rồng",
+          "rarity": "covert",
+          "weight": 5,
+          "coin": 180000
+        },
+        {
+          "id": "jackpot",
+          "name": "Jackpot Vault",
+          "rarity": "extraordinary",
+          "weight": 1.5,
+          "coin": 400000
+        },
+        {
+          "id": "crown",
+          "name": "Vương miện Jelly",
+          "rarity": "extraordinary",
+          "weight": 0.5,
+          "coin": 900000
+        }
+      ]
+    },
+    {
+      "id": "jelly-nether",
+      "name": "Rương Hỏa Ngục Nether",
+      "description": "Lửa địa ngục nung chảy mọi thứ, rương chứa vũ khí hỏa ngục và Sao Địa Ngục.",
+      "pull_cost": 75000,
+      "items": [
+        {
+          "id": "blaze_rod",
+          "name": "Que quỷ lửa",
+          "rarity": "milspec",
+          "weight": 35,
+          "coin": 25000
+        },
+        {
+          "id": "magma_cream",
+          "name": "Kem dung nham",
+          "rarity": "milspec",
+          "weight": 25,
+          "coin": 42000
+        },
+        {
+          "id": "wither_skull",
+          "name": "Đầu lâu Wither",
+          "rarity": "restricted",
+          "weight": 20,
+          "coin": 70000
+        },
+        {
+          "id": "netherite",
+          "name": "Khối Netherite",
+          "rarity": "classified",
+          "weight": 12,
+          "coin": 110000
+        },
+        {
+          "id": "inferno_sword",
+          "name": "Hỏa Kiếm Nether",
+          "rarity": "covert",
+          "weight": 6,
+          "coin": 220000
+        },
+        {
+          "id": "nether_star",
+          "name": "Sao Địa Ngục",
+          "rarity": "extraordinary",
+          "weight": 2,
+          "coin": 500000
+        }
+      ]
+    },
+    {
+      "id": "jelly-celestial",
+      "name": "Rương Thiên Giới",
+      "description": "Rương cánh thần thánh của vương quốc trên mây. Đầy quyền năng.",
+      "pull_cost": 150000,
+      "items": [
+        {
+          "id": "feather",
+          "name": "Lông vũ Thiên Sứ",
+          "rarity": "restricted",
+          "weight": 38,
+          "coin": 60000
+        },
+        {
+          "id": "elytra",
+          "name": "Cánh Elytra Ánh Kim",
+          "rarity": "restricted",
+          "weight": 28,
+          "coin": 100000
+        },
+        {
+          "id": "celestial_bow",
+          "name": "Cung Ánh Sáng",
+          "rarity": "classified",
+          "weight": 18,
+          "coin": 200000
+        },
+        {
+          "id": "dragon",
+          "name": "Trứng rồng Thần thánh",
+          "rarity": "covert",
+          "weight": 11,
+          "coin": 380000
+        },
+        {
+          "id": "celestial_crown",
+          "name": "Vương miện Thiên Hà",
+          "rarity": "extraordinary",
+          "weight": 4.2,
+          "coin": 800000
+        },
+        {
+          "id": "celestial_orb",
+          "name": "Quả cầu Vũ Trụ",
+          "rarity": "extraordinary",
+          "weight": 0.8,
+          "coin": 1800000
+        }
+      ]
+    },
+    {
+      "id": "jelly-jackpot",
+      "name": "Rương Hoàng Gia VIP",
+      "description": "Đỉnh cao may mắn. Cơ hội trúng Lõi Thần và Kho Báu Bất Tận 4.000.000 Coin.",
+      "pull_cost": 300000,
+      "items": [
+        {
+          "id": "diamond_block",
+          "name": "Khối Kim Cương",
+          "rarity": "classified",
+          "weight": 40,
+          "coin": 150000
+        },
+        {
+          "id": "dragon_head",
+          "name": "Đầu Rồng Huyền Thoại",
+          "rarity": "classified",
+          "weight": 28,
+          "coin": 250000
+        },
+        {
+          "id": "royal_scepter",
+          "name": "Vương trượng Hoàng Gia",
+          "rarity": "covert",
+          "weight": 18,
+          "coin": 500000
+        },
+        {
+          "id": "crown",
+          "name": "Vương miện Jelly Đế Vương",
+          "rarity": "covert",
+          "weight": 9,
+          "coin": 900000
+        },
+        {
+          "id": "god_core",
+          "name": "Lõi Thần Nexo",
+          "rarity": "extraordinary",
+          "weight": 4,
+          "coin": 1800000
+        },
+        {
+          "id": "infinite_jackpot",
+          "name": "Kho Báu Bất Tận",
+          "rarity": "extraordinary",
+          "weight": 1,
+          "coin": 4000000
+        }
+      ]
+    }
+  ]
+}
